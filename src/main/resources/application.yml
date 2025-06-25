@@ -1,1 +1,11 @@
-spring.application.name=oww
+spring:
+  profiles:
+    active: local
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
