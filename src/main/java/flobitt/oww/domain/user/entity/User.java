@@ -38,7 +38,8 @@ public class User extends SoftDeleteBaseEntity {
 
     @Column(name = "user_status")
     @Enumerated(EnumType.STRING)
-    private UserStatus userStatus;
+    @Builder.Default
+    private UserStatus userStatus = UserStatus.NOT_VERIFIED;
 
     @Column(name = "email_verified_at")
     private LocalDateTime emailVerifiedAt;

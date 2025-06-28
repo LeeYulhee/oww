@@ -45,6 +45,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     // Configuration Processor : 컴파일 타임에 설정 메타데이터를 자동 생성하는 annotation processor
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
