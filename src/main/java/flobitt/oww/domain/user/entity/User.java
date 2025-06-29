@@ -44,4 +44,8 @@ public class User extends SoftDeleteBaseEntity {
     @Column(name = "email_verified_at")
     private LocalDateTime emailVerifiedAt;
 
+    public void updateUserStatusActive() {
+        this.userStatus = UserStatus.ACTIVE;
+        this.emailVerifiedAt = LocalDateTime.now();
+    }
 }

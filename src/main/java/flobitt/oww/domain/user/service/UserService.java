@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final EmailVerificationRepository emailVerificationRepository;
+    private final EmailVerificationService emailVerificationService;
     private final PasswordEncoder passwordEncoder;
     private final AppProperties properties;
 
@@ -25,12 +25,14 @@ public class UserService {
         log.info("TEST = {}", properties.getVerificationTokenExpiry());
     }
 
+    // user 생성
     @Transactional
-    public User create(CreateUserReq req) {
-        User user = CreateUserReq.toEntity(req, passwordEncoder.encode(req.getPassword()));
+    public void create(User user) {
+        userRepository.save(user);
+    }
 
-        log.info("CREATED_AT = {}", user.getCreatedAt());
-
-        return userRepository.save(user);
+    @Transactional
+    public void updateUserStatusActive(User user) {
+        user.updateUserStatusActive();
     }
 }

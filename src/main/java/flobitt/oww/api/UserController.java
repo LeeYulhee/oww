@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -26,6 +27,6 @@ public class UserController implements UserAPI {
     @PostMapping
     public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserReq req) {
         userService.create(req);
-        return  ResponseEntity.status(OK).build();
+        return  ResponseEntity.status(CREATED).build();
     }
 }
