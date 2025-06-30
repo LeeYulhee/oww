@@ -1,69 +1,14 @@
-### 리팩토링 예시 : UserService
-```java
-public SignupResponse signup(SignupRequest request) {
-    validateDuplicateUser(request);
-    
-    User user = createAndSaveUser(request);
-    sendVerificationEmail(user);
-    
-    return SignupResponse.from(user); // 정적 팩토리 메서드
-}
-
-private User createAndSaveUser(SignupRequest request) {
-    User user = User.builder()
-            .userLoginId(request.getUserLoginId())
-            .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .userStatus(UserStatus.NOT_VERIFIED)
-            .build();
-    
-    return userRepository.save(user); // 저장된 user 반환
-}
-```
-```java
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@Builder
-public class ApiResponse<T> {
-    private boolean success;
-    private String message;
-    private T data;
-    
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message(message)
-                .data(data)
-                .build();
-    }
-    
-    public static <T> ApiResponse<T> success(String message) {
-        return success(message, null);
-    }
-    
-    public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .build();
-    }
-}
-
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@Builder
-public class SignupResponse {
-    private String userId;
-    private String email;
-    private String message;
-}
-```
----
 ### UserService와 EmailVerificationService 구조 고민
-1. UserService에서 회원가입 후에 메일을 바로 발송하면 EmailVerificationService를 사용하게 되잖아. 근데 EmailVerificationService에서는 토큰 인증 후에 userStatus를 업데이트 해줘야 해서 UserService를 참조하니 순환참조가 일어나잖아. 이 부분이 문제라고 생각해.
-2. 다음 차선책은 Controller에서 userService와 emailService를 전부 호출하는 건데 이게 좋은 방법인지 모르겠어
-방법 1: 이벤트 기반 아키텍처 (권장)
-장점: 완전한 디커플링, 확장성 좋음
+1. UserService에서 회원가입 후에 메일을 바로 발송하면 EmailVerificationService를 사용하게 되는데, EmailVerificationService에서는 토큰 인증 후에 userStatus를 업데이트 해줘야 해서 UserService를 참조하니 순환참조가 일어남.
+2. 다음 차선책은 Controller에서 userService와 emailService를 전부 호출하는 건데 이렇게 되면 Controller에서 비즈니스 로직을 알게 되는 관점이 아닌지
+
+
+**방법 1: 이벤트 기반 아키텍처(권장)**
+
+장점: 완전한 디커플링, 확장성 좋음<br>
 단점: 복잡도 약간 증가
-java// 1. 이벤트 정의
+```java
+// 1. 이벤트 정의
 @Getter @AllArgsConstructor
 public class UserCreatedEvent {
     private String userId;
@@ -179,16 +124,20 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("인증 완료"));
     }
 }
-방법 2: 퍼사드 패턴
-장점: 단순함, 이해하기 쉬움
+```
+
+**방법 2: 퍼사드 패턴**
+
+장점: 단순함, 이해하기 쉬움<br>
 단점: 퍼사드가 커질 수 있음
-java// AuthFacade - 회원가입/인증 관련 모든 오케스트레이션
+```java
+// AuthFacade - 회원가입/인증 관련 모든 오케스트레이션
 @Service
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class AuthFacade {
-    
+
     private final UserService userService;
     private final EmailVerificationService emailVerificationService;
     
@@ -238,7 +187,7 @@ public class AuthFacade {
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
-    
+
     private final AuthFacade authFacade;
     private final UserService userService;  // 로그인용
     
@@ -254,17 +203,21 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("인증 완료"));
     }
 }
-방법 3: 인터페이스 분리 (DIP 적용)
-장점: 의존성 역전, 테스트 용이
+```
+
+**방법 3: 인터페이스 분리(DIP 적용)**
+
+장점: 의존성 역전, 테스트 용이<br>
 단점: 인터페이스 관리 필요
-java// 1. 인터페이스 정의
+```java
+// 1. 인터페이스 정의
 public interface UserActivator {
-    void activateUser(String userId);
-    User findUserForVerification(String userId);
+void activateUser(String userId);
+User findUserForVerification(String userId);
 }
 
 public interface EmailSender {
-    void sendVerificationEmail(String userId, String email);
+void sendVerificationEmail(String userId, String email);
 }
 
 // 2. UserService - 인터페이스 구현
@@ -272,7 +225,7 @@ public interface EmailSender {
 @Transactional
 @RequiredArgsConstructor
 public class UserService implements UserActivator {
-    
+
     private final UserRepository userRepository;
     
     @Override
@@ -293,7 +246,6 @@ public class UserService implements UserActivator {
 }
 
 // 3. EmailVerificationService - 인터페이스 의존
-```java
 @Service
 @RequiredArgsConstructor
 public class EmailVerificationService implements EmailSender {
@@ -317,10 +269,8 @@ public class EmailVerificationService implements EmailSender {
         // 구현
     }
 }
-```
 
 // 4. AuthService - 두 인터페이스 조합
-```java
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -335,9 +285,12 @@ public class AuthService {
     }
 }
 ```
-방법 4: Controller 오케스트레이션 (현실적)
-장점: 단순하고 직관적
-단점: Controller가 비즈니스 로직 알게 됨
+
+**방법 4: Controller 오케스트레이션**
+
+장점: 단순하고 직관적<br>
+단점: Controller가 비즈니스 로직 알게 됨<br>
+(⇒ Controller의 본래 책임은 HTTP 요청/응답 처리, '어떻게 처리할지'가 아니라 '무엇을 처리할지'만 알아야 함)
 ```java
 @RestController
 @RequiredArgsConstructor
@@ -383,21 +336,23 @@ public class AuthController {
     }
 }
 ```
-🎯 권장사항
-1순위: 이벤트 기반 아키텍처
-완전한 디커플링
-확장성 좋음 (새로운 이벤트 리스너 쉽게 추가)
+
+**🎯 권장사항**
+
+**1순위: 이벤트 기반 아키텍처<br>**
+완전한 디커플링<br>
+확장성 좋음 (새로운 이벤트 리스너 쉽게 추가)<br>
 Spring의 @EventListener 활용
 
-2순위: 퍼사드 패턴
-이해하기 쉬움
-순환참조 해결
+**2순위: 퍼사드 패턴<br>**
+이해하기 쉬움<br>
+순환참조 해결<br>
 비즈니스 로직이 한 곳에 집중
 
-3순위: Controller 오케스트레이션
-가장 단순함
+**3순위: Controller 오케스트레이션<br>**
+가장 단순함<br>
 작은 프로젝트에서는 충분
 
-**=> 결론 : 도메인이 같으면 퍼사드 패턴, 도메인이 다르면 이벤트 기반으로 구현하기**
+**⇒ 결론 : 도메인이 같으면 퍼사드 패턴, 도메인이 다르면 이벤트 기반으로 구현하기**
 
 ---

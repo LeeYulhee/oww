@@ -2,6 +2,7 @@ package flobitt.oww.api;
 
 import flobitt.oww.api.in.UserAPI;
 import flobitt.oww.domain.user.dto.req.CreateUserReq;
+import flobitt.oww.domain.user.service.AuthFacade;
 import flobitt.oww.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +17,11 @@ import static org.springframework.http.HttpStatus.OK;
 @RequiredArgsConstructor
 public class UserController implements UserAPI {
 
-    private final UserService userService;
-
-    @GetMapping("/")
-    public ResponseEntity<String> test() {
-        userService.test();
-        return  ResponseEntity.status(OK).build();
-    }
+    private final AuthFacade authFacade;
 
     @PostMapping
     public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserReq req) {
-        userService.create(req);
+        authFacade.signUp(req);
         return  ResponseEntity.status(CREATED).build();
     }
 }

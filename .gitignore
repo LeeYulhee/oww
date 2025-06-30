@@ -36,4 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
+### application.yml ###
 application-local.yml
+
+### QueryDSL QClass ###
+/src/main/generated/

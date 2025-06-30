@@ -26,12 +26,10 @@ public class UserService {
     }
 
     // user 생성
-    @Transactional
     public void create(User user) {
         userRepository.save(user);
     }
 
-    @Transactional
     public void updateUserStatusActive(User user) {
         user.updateUserStatusActive();
     }

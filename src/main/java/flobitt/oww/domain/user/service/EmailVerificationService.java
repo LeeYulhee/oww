@@ -1,5 +1,6 @@
 package flobitt.oww.domain.user.service;
 
+import flobitt.oww.domain.user.dto.internal.ParseTokenDto;
 import flobitt.oww.domain.user.entity.EmailVerification;
 import flobitt.oww.domain.user.entity.User;
 import flobitt.oww.domain.user.entity.VerificationType;
@@ -13,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,28 +31,25 @@ public class EmailVerificationService {
     private final MailProperties mailProperties;
 
     // 이메일 발송
-    public void sendEmail(User user, String emailToken) {
+    public void sendEmail(String email, String emailToken) {
         try {
             String verificationUrl = buildVerificationUrl(emailToken);
-            MimeMessage message = createVerificationEmailMessage(user.getEmail(), verificationUrl);
-            sendEmailMessage(message, user.getEmail());
-            createEmailVerification(user, emailToken);
-
+            MimeMessage message = createVerificationEmailMessage(email, verificationUrl);
+            sendEmailMessage(message, email);
         } catch (Exception e) {
-            log.error("인증 이메일 발송 실패: {} - {}", user.getEmail(), e.getMessage());
+            log.error("인증 이메일 발송 실패: {} - {}", email, e.getMessage());
             // TODO Exception 정의 필요
             throw new IllegalArgumentException("이메일 발송에 실패했습니다.");
         }
     }
 
     // 이메일 인증 완료
-    @Transactional
     public void updateEmailVerification(EmailVerification emailVerification) {
         emailVerification.updateEmailVerification();
     }
 
     // Entity 생성 및 저장
-    private void createEmailVerification(User user, String token) {
+    public void createEmailVerification(User user, String token) {
         EmailVerification verification = EmailVerification.builder()
                 .verificationToken(token)
                 .verificationType(VerificationType.SIGNUP)
@@ -61,9 +61,13 @@ public class EmailVerificationService {
         emailVerificationRepository.save(verification);
     }
 
+    public Optional<EmailVerification> findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
+        return emailVerificationRepository.findValidVerificationByParseToken(parseTokenDto, token, now);
+    }
+
     // 이메일 인증 URL 생성
     private String buildVerificationUrl(String emailToken) {
-        return appProperties.getFrontendUrl() + "/verify-email?token=" + emailToken;
+        return appProperties.getFrontendUrl() + "/email-verifications/" + emailToken;
     }
 
     // 이메일 생성

@@ -6,8 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "spring.jwt")
+@ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
     private String verificationKey;
-    private String algorithm;
 }
