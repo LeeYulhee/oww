@@ -11,7 +11,7 @@ CREATE TABLE `USERS` (
 	`user_id`	        VARCHAR(36)	 NOT NULL    PRIMARY KEY,
 	`user_login_id`	    VARCHAR(50)	 NOT NULL    UNIQUE 	            COMMENT '로그인용 ID',
 	`email`	            VARCHAR(255) NOT NULL    UNIQUE 	            COMMENT '이메일',
-	`password`	        VARCHAR(255) NOT NULL	                        COMMENT '암호화된 비밀번호(필요하면 추후에 비밀번호 만료일자도  별도 테이블로 추가)',
+	`password`	        VARCHAR(255) NOT NULL	                        COMMENT '암호화된 비밀번호(필요하면 추후에 비밀번호 만료일자도 별도 테이블로 추가)',
 	`user_status`	    VARCHAR(20)	 NOT NULL	 DEFAULT 'NOT_VERIFIED'	COMMENT '계정 활성화 상태(ACTIVE, NOT_VERIFIED)',
 	`email_verified_at`	DATETIME	 NULL	                            COMMENT '이메일 인증 완료 시간',
 	`is_deleted`	    BOOLEAN	     NOT NULL    DEFAULT FALSE,
