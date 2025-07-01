@@ -68,8 +68,18 @@ public class EmailVerificationService {
     /**
      * 해당 토큰의 존재(유효성) 확인
      */
-    public Optional<EmailVerification> findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
-        return emailVerificationRepository.findValidVerificationByParseToken(parseTokenDto, token, now);
+    public EmailVerification findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
+        return emailVerificationRepository
+                .findValidVerificationByParseToken(parseTokenDto, token, now)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않거나 만료된 인증 링크입니다."));
+    }
+
+    /**
+     * 해당 사용자와 타입에 맞는 토큰 존재 여부 확인
+     */
+    public EmailVerification findByUserAndVerificationTypeAndVerificationAtIsNull(User user, VerificationType type) {
+        return emailVerificationRepository.findByUserAndVerificationTypeAndVerificationAtIsNull(user, type, LocalDateTime.now())
+                .orElseThrow(() -> new IllegalArgumentException("조회된 토큰이 없습니다."));
     }
 
     /**

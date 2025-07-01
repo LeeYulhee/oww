@@ -35,4 +35,13 @@ public class UserService {
     public void updateUserStatusActive(User user) {
         user.updateUserStatusActive();
     }
+
+    /**
+     * User 조회 : 이메일로, 삭제되지 않은 User
+     */
+    public User findByEmailAndIsDeletedFalse(String email) {
+        // TODO Exception 설정
+        return userRepository.findByEmailAndIsDeletedFalse(email)
+                .orElseThrow(() -> new IllegalArgumentException("유효한 회원 정보가 없습니다."));
+    }
 }
