@@ -26,11 +26,13 @@ public class AuthFacade {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    // 회원가입
+    /**
+     * 회원가입 및 회원가입 인증 이메일 발송
+     */
     @Transactional
     public void signUp(CreateUserReq req) {
         User user = CreateUserReq.toEntity(req, passwordEncoder.encode(req.getPassword()));
-        userService.create(user);
+        userService.createUser(user);
 
         String emailToken = tokenService.generateVerificationToken(user.getId(), user.getEmail(), VerificationType.SIGNUP);
         emailVerificationService.createEmailVerification(user, emailToken);
@@ -38,29 +40,32 @@ public class AuthFacade {
         applicationEventPublisher.publishEvent(new CreateUserEvent(user.getEmail(), emailToken));
     }
 
-    // 이메일 인증
+    /**
+     * 이메일 인증
+     */
+    @Transactional
     public void verifyEmail(String token) {
         log.info("이메일 인증 시도: token={}", token);
-        VerificationType type = VerificationType.SIGNUP;
 
-        // 토큰을 풀어서 유효성 검사 필요 : User 이메일, VerificationType 확인 가능
-        ParseTokenDto parseTokenDto = tokenService.validateToken(token, type);
-
-        // 1. 토큰 유효성 검사
-        EmailVerification verification = emailVerificationService
-                .findValidVerificationByParseToken(parseTokenDto, token, LocalDateTime.now())
-                // TODO Exception 설정
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않거나 만료된 인증 링크입니다."));
-
+        EmailVerification verification = getValidEmailVerification(token);
         User user = verification.getUser();
 
-        // 2. 사용자 상태 업데이트
         userService.updateUserStatusActive(user);
-
-        // 3. 인증 완료 처리
         emailVerificationService.updateEmailVerification(verification);
 
         log.info("이메일 인증 완료: userId={}", user.getUserLoginId());
+    }
+
+    /**
+     * 토큰을 검증하고 유효한 EmailVerification을 반환
+     */
+    private EmailVerification getValidEmailVerification(String token) {
+        ParseTokenDto parseTokenDto = tokenService.validateToken(token);
+
+        // TODO Exception 설정
+        return emailVerificationService
+                .findValidVerificationByParseToken(parseTokenDto, token, LocalDateTime.now())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않거나 만료된 인증 링크입니다."));
     }
 
 //    public void resendVerificationEmail(ResendEmailReq req) {

@@ -1,6 +1,5 @@
 package flobitt.oww.domain.user.repository;
 
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import flobitt.oww.domain.user.dto.internal.ParseTokenDto;
 import flobitt.oww.domain.user.entity.EmailVerification;
@@ -19,6 +18,9 @@ public class EmailVerificationRepositoryImpl implements EmailVerificationReposit
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    /**
+     * 해당 토큰의 존재(유효성) 확인
+     */
     @Override
     public Optional<EmailVerification> findValidVerificationByParseToken(ParseTokenDto dto, String token, LocalDateTime now) {
         QEmailVerification emailVerification = QEmailVerification.emailVerification;

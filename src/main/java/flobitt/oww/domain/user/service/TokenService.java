@@ -26,9 +26,10 @@ public class TokenService {
     private final JwtProperties jwtProperties;
     private final AppProperties appProperties;
 
-    // 인증 토큰 생성
+    /**
+     * 인증 토큰 생성
+     */
     public String generateVerificationToken(UUID userId, String email, VerificationType type) {
-        log.info("VerificationKey = {}", jwtProperties.getVerificationKey());
         SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
 
         return Jwts.builder()
@@ -41,8 +42,10 @@ public class TokenService {
                 .compact();
     }
 
-    // JWT 토큰 검증
-    public ParseTokenDto validateToken(String token, VerificationType type) {
+    /**
+     * JWT 토큰 검증
+     */
+    public ParseTokenDto validateToken(String token) {
         Claims tokenClaims = parseToken(token);
 
         ParseTokenDto parseTokenDto = ParseTokenDto.builder()
@@ -52,16 +55,17 @@ public class TokenService {
                 .build();
 
         // TODO Exception 설정
-        if (!type.toString().equals(parseTokenDto.getTokenType())
-                || parseTokenDto.getUserId().isBlank()
-                || parseTokenDto.getEmail().isBlank()) throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        if (parseTokenDto.getTokenType().isBlank()
+            || parseTokenDto.getUserId().isBlank()
+            || parseTokenDto.getEmail().isBlank()) throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
 
         return parseTokenDto;
     }
 
-    // JWT 토큰 파싱
+    /**
+     * JWT 토큰 파싱
+     */
     private Claims parseToken(String token) {
-        log.info("VerificationKey = {}", jwtProperties.getVerificationKey());
         SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
 
         return Jwts.parserBuilder()
@@ -71,6 +75,9 @@ public class TokenService {
                 .getBody();
     }
 
+    /**
+     * JWT 토큰 파싱을 위한 secretKey 생성
+     */
     private SecretKey getSecretKey(String secretKey) {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
