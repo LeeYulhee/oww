@@ -1,13 +1,16 @@
 package flobitt.oww.domain.user.service;
 
 import flobitt.oww.domain.user.entity.User;
+import flobitt.oww.domain.user.entity.UserStatus;
 import flobitt.oww.domain.user.repository.UserRepository;
 import flobitt.oww.global.properties.AppProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -16,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final AppProperties properties;
+    private final AppProperties appProperties;
 
     public void test() {
-        log.info("TEST = {}", properties.getVerificationTokenExpiry());
+        log.info("TEST = {}", appProperties.getVerificationTokenExpiry());
     }
 
     /**
@@ -45,5 +48,47 @@ public class UserService {
         // TODO Exception 설정
         return userRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new IllegalArgumentException("유효한 회원 정보가 없습니다."));
+    }
+
+    /**
+     * 24시간이 지난 미인증 사용자 삭제 처리(배치 작업)
+     */
+    @Transactional
+    public int deleteExpiredUnverifiedUsers() {
+        LocalDateTime cutoffTime = calculateCutoffTime();
+        List<User> expiredUsers = findExpiredUnverifiedUsers(cutoffTime);
+
+        if (expiredUsers.isEmpty()) {
+            log.info("삭제할 미인증 사용자가 없습니다");
+            return 0;
+        }
+
+        expiredUsers.forEach(this::deleteUser);
+        return expiredUsers.size();
+    }
+
+    /**
+     * 마감 시간(cutoffTime) 계산
+     */
+    private LocalDateTime calculateCutoffTime() {
+        return LocalDateTime.now()
+                .minusHours(appProperties.getVerificationTokenExpiry());
+    }
+
+    /**
+     * User 조회 : 사용자 상태 NOT_VERIFIED, 사용자 생성 시간이 24시간 넘은 사용자 목록
+     */
+    private List<User> findExpiredUnverifiedUsers(LocalDateTime cutoffTime) {
+        return userRepository.findExpiredUnverifiedUsers(UserStatus.NOT_VERIFIED, cutoffTime);
+    }
+
+    /**
+     * User 삭제
+     */
+    @Transactional
+    private void deleteUser(User user) {
+        user.delete();
+        log.debug("미인증 사용자 삭제 처리: userId={}, email={}",
+                user.getUserLoginId(), user.getEmail());
     }
 }

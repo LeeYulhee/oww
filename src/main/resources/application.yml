@@ -24,3 +24,7 @@ spring:
             enable: true
 app:
   frontend-url: ${FRONTEND_URL}
+  scheduler:
+    enabled: true
+    user-cleanup-cron: "0 0 2 * * *"  # 매일 새벽 2시
+    max-retries: 3

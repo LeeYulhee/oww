@@ -48,4 +48,8 @@ public class User extends SoftDeleteBaseEntity {
         this.userStatus = UserStatus.ACTIVE;
         this.emailVerifiedAt = LocalDateTime.now();
     }
+
+    public void delete() {
+        super.delete();
+    }
 }
