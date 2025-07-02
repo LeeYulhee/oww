@@ -24,7 +24,10 @@ spring:
             enable: true
 app:
   frontend-url: ${FRONTEND_URL}
+  verification-token-expiry: ${VERIFICATION_TOKEN_EXPIRY}
+  hard-delete-days: ${HARD_DELETE_DAYS}
   scheduler:
     enabled: true
     user-cleanup-cron: "0 0 2 * * *"  # 매일 새벽 2시
+    user-hard-delete-cron: "0 0 3 * * *" # 매일 새벽 3시
     max-retries: 3

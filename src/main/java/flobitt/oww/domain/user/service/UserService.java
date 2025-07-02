@@ -55,7 +55,7 @@ public class UserService {
      */
     @Transactional
     public int deleteExpiredUnverifiedUsers() {
-        LocalDateTime cutoffTime = calculateCutoffTime();
+        LocalDateTime cutoffTime = calculateCutoffTime(appProperties.getVerificationTokenExpiry(), false);
         List<User> expiredUsers = findExpiredUnverifiedUsers(cutoffTime);
 
         if (expiredUsers.isEmpty()) {
@@ -68,11 +68,29 @@ public class UserService {
     }
 
     /**
+     * 7일이 지난 삭제된 사용자 완전 삭제 처리(배치 작업)
+     */
+    @Transactional
+    public int hardDeleteExpiredDeletedUsers() {
+        LocalDateTime cutoffTime = calculateCutoffTime(appProperties.getHardDeleteDays(), true);
+        log.info("@@@@@@@@@@마감시간 : = {}", cutoffTime);
+        List<User> expiredDeletedUsers = findExpiredDeletedUsers(cutoffTime);
+
+        if (expiredDeletedUsers.isEmpty()) {
+            log.info("완전 삭제할 사용자가 없습니다");
+            return 0;
+        }
+
+        expiredDeletedUsers.forEach(this::hardDeleteUser);
+        return expiredDeletedUsers.size();
+    }
+
+    /**
      * 마감 시간(cutoffTime) 계산
      */
-    private LocalDateTime calculateCutoffTime() {
-        return LocalDateTime.now()
-                .minusHours(appProperties.getVerificationTokenExpiry());
+    private LocalDateTime calculateCutoffTime(int period, boolean isDays) {
+        LocalDateTime now = LocalDateTime.now();
+        return isDays ? now.minusDays(period) : now.minusHours(period);
     }
 
     /**
@@ -83,12 +101,29 @@ public class UserService {
     }
 
     /**
-     * User 삭제
+     * User 조회 : 삭제된 사용자 중 7일이 지난 사용자 목록
+     */
+    private List<User> findExpiredDeletedUsers(LocalDateTime cutoffTime) {
+        return userRepository.findExpiredDeletedUsers(cutoffTime);
+    }
+
+    /**
+     * User 삭제 : Soft Delete
      */
     @Transactional
     private void deleteUser(User user) {
         user.delete();
         log.debug("미인증 사용자 삭제 처리: userId={}, email={}",
                 user.getUserLoginId(), user.getEmail());
+    }
+
+    /**
+     * User 완전 삭제 : Hard Delete
+     */
+    @Transactional
+    private void hardDeleteUser(User user) {
+        userRepository.delete(user);
+        log.debug("사용자 완전 삭제 처리: userId={}, email={}, deletedAt={}",
+                user.getUserLoginId(), user.getEmail(), user.getDeletedAt());
     }
 }

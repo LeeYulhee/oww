@@ -21,6 +21,11 @@ public class SchedulerProperties {
     private String userCleanupCron; // 매일 새벽 2시
 
     /**
+     * 삭제된 사용자 완전 삭제 작업 cron 표현식
+     */
+    private String userHardDeleteCron;
+
+    /**
      * 최대 재시도 횟수
      */
     private int maxRetries;

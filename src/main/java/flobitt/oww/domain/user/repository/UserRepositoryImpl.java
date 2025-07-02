@@ -28,4 +28,16 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
                 )
                 .fetch();
     }
+
+    @Override
+    public List<User> findExpiredDeletedUsers(LocalDateTime cutoffTime) {
+        return jpaQueryFactory
+                .selectFrom(user)
+                .where(
+                        user.isDeleted.eq(true),
+                        user.deletedAt.isNotNull(),
+                        user.deletedAt.lt(cutoffTime)
+                )
+                .fetch();
+    }
 }

@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface UserRepositoryCustom {
     List<User> findExpiredUnverifiedUsers(UserStatus userStatus, LocalDateTime cutoffTime);
+    List<User> findExpiredDeletedUsers(LocalDateTime cutoffTime);
 }
