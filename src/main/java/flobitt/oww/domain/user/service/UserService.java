@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
@@ -23,6 +25,7 @@ public class UserService {
     /**
      * User Entity 저장
      */
+    @Transactional
     public void createUser(User user) {
         userRepository.save(user);
     }
@@ -30,6 +33,7 @@ public class UserService {
     /**
      * User 상태 ACTIVE로 변경
      */
+    @Transactional
     public void updateUserStatusActive(User user) {
         user.updateUserStatusActive();
     }

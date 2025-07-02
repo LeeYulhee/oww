@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EmailVerificationService {
 
     private final EmailVerificationRepository emailVerificationRepository;
@@ -46,6 +48,7 @@ public class EmailVerificationService {
     /**
      * 이메일 인증 상태 완료로 변경(인증 날짜 설정)
      */
+    @Transactional
     public void updateEmailVerification(EmailVerification emailVerification) {
         emailVerification.updateEmailVerification();
     }
@@ -53,6 +56,7 @@ public class EmailVerificationService {
     /**
      * 이메일 인증 Entity 생성 및 저장
      */
+    @Transactional
     public void createEmailVerification(User user, String token) {
         EmailVerification verification = EmailVerification.builder()
                 .verificationToken(token)

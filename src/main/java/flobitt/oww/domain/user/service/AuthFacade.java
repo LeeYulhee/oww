@@ -8,12 +8,12 @@ import flobitt.oww.domain.user.entity.User;
 import flobitt.oww.domain.user.entity.VerificationType;
 import flobitt.oww.domain.user.event.ResendVerificationEmailEvent;
 import flobitt.oww.domain.user.event.SendVerificationEmailEvent;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
