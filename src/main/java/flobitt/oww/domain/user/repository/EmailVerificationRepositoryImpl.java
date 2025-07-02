@@ -28,6 +28,7 @@ public class EmailVerificationRepositoryImpl implements EmailVerificationReposit
         return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(emailVerification)
                 .where(emailVerification.user.id.eq(UUID.fromString(dto.getUserId())),
+                        emailVerification.user.isDeleted.eq(false),
                         emailVerification.email.eq(dto.getEmail()),
                         emailVerification.verificationType.eq(VerificationType.valueOf(dto.getTokenType())),
                         emailVerification.verificationToken.eq(token),

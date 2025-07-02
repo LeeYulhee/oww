@@ -78,7 +78,6 @@ public class AuthFacade {
     private EmailVerification getValidEmailVerification(String token) {
         ParseTokenDto parseTokenDto = tokenService.validateToken(token);
 
-        // TODO Exception 설정
         return emailVerificationService
                 .findValidVerificationByParseToken(parseTokenDto, token, LocalDateTime.now());
     }

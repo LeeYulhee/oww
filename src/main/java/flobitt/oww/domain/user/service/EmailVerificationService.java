@@ -66,7 +66,7 @@ public class EmailVerificationService {
     }
 
     /**
-     * 해당 토큰의 존재(유효성) 확인
+     * 해당 토큰의 존재(유효성) 확인(user.is_deleted = false인 경우)
      */
     public EmailVerification findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
         return emailVerificationRepository
@@ -78,6 +78,7 @@ public class EmailVerificationService {
      * 해당 사용자와 타입에 맞는 토큰 존재 여부 확인
      */
     public EmailVerification findByUserAndVerificationTypeAndVerificationAtIsNull(User user, VerificationType type) {
+        // TODO Exception 설정
         return emailVerificationRepository.findByUserAndVerificationTypeAndVerificationAtIsNull(user, type, LocalDateTime.now())
                 .orElseThrow(() -> new IllegalArgumentException("조회된 토큰이 없습니다."));
     }
