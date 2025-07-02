@@ -1,8 +1,8 @@
 package flobitt.oww.domain.user.dto.internal;
 
-import lombok.*;
-
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

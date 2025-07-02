@@ -1,12 +1,9 @@
 package flobitt.oww.domain.user.repository;
 
 import flobitt.oww.domain.user.entity.EmailVerification;
-import flobitt.oww.domain.user.entity.User;
-import flobitt.oww.domain.user.entity.VerificationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository

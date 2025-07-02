@@ -9,5 +9,5 @@ import org.springframework.http.ResponseEntity;
 public interface UserAPI {
 
     @Operation(summary = "회원가입", description = "회원가입을 한다.")
-    public ResponseEntity<Void> createUser(CreateUserReq dto);
+    ResponseEntity<Void> createUser(CreateUserReq dto);
 }
