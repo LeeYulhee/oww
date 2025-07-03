@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
@@ -22,20 +23,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TokenService {
 
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
     private final JwtProperties jwtProperties;
     private final AppProperties appProperties;
+    private final SecureRandom secureRandom;
 
     /**
      * 인증 토큰 생성
      */
     public String generateVerificationToken(UUID userId, String email, VerificationType type) {
         SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
+        String nonce = generateSecureNonce();
 
         return Jwts.builder()
-                .setSubject(userId.toString())
                 .claim("email", email)
                 .claim("type", type.toString())
-                .setIssuedAt(new Date())
+                .claim("nonce", nonce)
                 .setExpiration(Date.from(Instant.now().plusSeconds(appProperties.getVerificationTokenExpiry() * 3600)))
                 .signWith(secretKey)
                 .compact();
@@ -48,14 +52,12 @@ public class TokenService {
         Claims tokenClaims = parseToken(token);
 
         ParseTokenDto parseTokenDto = ParseTokenDto.builder()
-                .userId(tokenClaims.getSubject())
                 .email(tokenClaims.get("email", String.class))
                 .tokenType(tokenClaims.get("type", String.class))
                 .build();
 
         // TODO Exception 설정
         if (parseTokenDto.getTokenType().isBlank()
-            || parseTokenDto.getUserId().isBlank()
             || parseTokenDto.getEmail().isBlank()) throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
 
         return parseTokenDto;
@@ -80,5 +82,23 @@ public class TokenService {
     private SecretKey getSecretKey(String secretKey) {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    /**
+     * nonce 생성(보안 강화) : 8바이트 랜덤 값을 16진수로 변환
+     */
+    public String generateSecureNonce() {
+        byte[] nonceBytes = new byte[8];  // 8바이트
+        secureRandom.nextBytes(nonceBytes);
+
+        char[] hexChars = new char[16];   // 16문자
+
+        for (int i = 0; i < 8; i++) {
+            int byteValue = nonceBytes[i] & 0xFF;
+            hexChars[i * 2] = HEX_CHARS[byteValue >>> 4];
+            hexChars[i * 2 + 1] = HEX_CHARS[byteValue & 0x0F];
+        }
+
+        return new String(hexChars);
     }
 }
