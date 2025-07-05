@@ -12,4 +12,5 @@ public class AppProperties {
     private int verificationTokenExpiry;
     private int resendLimitMinutes;
     private String frontendUrl;
+    private int hardDeleteDays;
 }

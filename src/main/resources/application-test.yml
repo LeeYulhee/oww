@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  mail:
+    host: localhost
+    port: 25
+    username: test@test.com
+    password: test
+
+app:
+  frontend-url: http://localhost:8080
+  verification-token-expiry: 24
+  hard-delete-days: 7
+  scheduler:
+    enabled: false
+
+jwt:
+  verification-key: test-secret-key-for-verification-tokens-must-be-long-enough
+
+logging:
+  level:
+    flobitt.oww: DEBUG

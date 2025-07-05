@@ -1,3 +1,7 @@
+### 로그 파일
+- 배치는 별도 로그 파일 생성
+---
+
 ### 리팩토링 예시 : UserService
 ```java
 public SignupResponse signup(SignupRequest request) {

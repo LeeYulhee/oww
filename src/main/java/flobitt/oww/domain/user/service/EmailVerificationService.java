@@ -9,20 +9,19 @@ import flobitt.oww.global.properties.AppProperties;
 import flobitt.oww.global.properties.MailProperties;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EmailVerificationService {
 
     private final EmailVerificationRepository emailVerificationRepository;
@@ -30,7 +29,9 @@ public class EmailVerificationService {
     private final AppProperties appProperties;
     private final MailProperties mailProperties;
 
-    // 이메일 발송
+    /**
+     * 이메일 발송
+     */
     public void sendEmail(String email, String emailToken) {
         try {
             String verificationUrl = buildVerificationUrl(emailToken);
@@ -43,12 +44,18 @@ public class EmailVerificationService {
         }
     }
 
-    // 이메일 인증 완료
+    /**
+     * 이메일 인증 상태 완료로 변경(인증 날짜 설정)
+     */
+    @Transactional
     public void updateEmailVerification(EmailVerification emailVerification) {
         emailVerification.updateEmailVerification();
     }
 
-    // Entity 생성 및 저장
+    /**
+     * 이메일 인증 Entity 생성 및 저장
+     */
+    @Transactional
     public void createEmailVerification(User user, String token) {
         EmailVerification verification = EmailVerification.builder()
                 .verificationToken(token)
@@ -61,16 +68,34 @@ public class EmailVerificationService {
         emailVerificationRepository.save(verification);
     }
 
-    public Optional<EmailVerification> findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
-        return emailVerificationRepository.findValidVerificationByParseToken(parseTokenDto, token, now);
+    /**
+     * 해당 토큰의 존재(유효성) 확인(user.is_deleted = false인 경우)
+     */
+    public EmailVerification findValidVerificationByParseToken(ParseTokenDto parseTokenDto, String token, LocalDateTime now) {
+        return emailVerificationRepository
+                .findValidVerificationByParseToken(parseTokenDto, token, now)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않거나 만료된 인증 링크입니다."));
     }
 
-    // 이메일 인증 URL 생성
+    /**
+     * 해당 사용자와 타입에 맞는 토큰 존재 여부 확인
+     */
+    public EmailVerification findByUserAndVerificationTypeAndVerificationAtIsNull(User user, VerificationType type) {
+        // TODO Exception 설정
+        return emailVerificationRepository.findByUserAndVerificationTypeAndVerificationAtIsNull(user, type, LocalDateTime.now())
+                .orElseThrow(() -> new IllegalArgumentException("조회된 토큰이 없습니다."));
+    }
+
+    /**
+     * 이메일 인증 URL 생성
+     */
     private String buildVerificationUrl(String emailToken) {
         return appProperties.getFrontendUrl() + "/email-verifications/" + emailToken;
     }
 
-    // 이메일 생성
+    /**
+     * 이메일 생성
+     */
     private MimeMessage createVerificationEmailMessage(String toEmail, String verificationUrl)
             throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
@@ -84,13 +109,17 @@ public class EmailVerificationService {
         return message;
     }
 
-    // 이메일 발송
+    /**
+     * 이메일 발송
+     */
     private void sendEmailMessage(MimeMessage message, String toEmail) {
         mailSender.send(message);
         log.info("인증 이메일 발송 완료: {}", toEmail);
     }
 
-    // 이메일 내용 생성
+    /**
+     * 회원가입 이메일 내용 생성
+     */
     private String buildVerificationEmailContent(String verificationUrl) {
         return """
             <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
