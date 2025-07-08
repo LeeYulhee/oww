@@ -73,7 +73,6 @@ public class UserService {
     @Transactional
     public int hardDeleteExpiredDeletedUsers() {
         LocalDateTime cutoffTime = calculateCutoffTime(appProperties.getHardDeleteDays(), true);
-        log.info("@@@@@@@@@@마감시간 : = {}", cutoffTime);
         List<User> expiredDeletedUsers = findExpiredDeletedUsers(cutoffTime);
 
         if (expiredDeletedUsers.isEmpty()) {

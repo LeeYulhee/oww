@@ -2,6 +2,7 @@ package flobitt.oww.global;
 
 import flobitt.oww.domain.user.service.UserService;
 import flobitt.oww.global.properties.SchedulerProperties;
+import flobitt.oww.global.scheduler.UserScheduler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

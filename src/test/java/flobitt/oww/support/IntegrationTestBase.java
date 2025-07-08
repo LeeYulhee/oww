@@ -10,7 +10,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "integration-test"})
 @Testcontainers
 @Transactional
 public abstract class IntegrationTestBase {

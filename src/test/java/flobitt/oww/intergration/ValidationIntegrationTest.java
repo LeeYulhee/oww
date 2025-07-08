@@ -1,8 +1,8 @@
 package flobitt.oww.intergration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import flobitt.oww.IntegrationTestBase;
 import flobitt.oww.domain.user.dto.req.CreateUserReq;
+import flobitt.oww.support.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -85,7 +85,7 @@ class ValidationIntegrationTest extends IntegrationTestBase {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpected(status().isBadRequest());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

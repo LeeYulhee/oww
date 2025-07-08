@@ -16,11 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.assertj.core.api.Assertions;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static flobitt.oww.support.CustomAssertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -62,7 +63,7 @@ class UserSignupIntegrationTest extends IntegrationTestBase {
 
         // 2. 사용자가 생성되었는지 확인
         Optional<User> savedUser = userRepository.findByEmailAndIsDeletedFalse("test@example.com");
-        assertThat(savedUser).isPresent();
+        Assertions.assertThat(savedUser).isPresent();
         assertThat(savedUser.get()).hasEmail("test@example.com")
                 .hasLoginId("testuser")
                 .isNotVerified();
@@ -72,7 +73,7 @@ class UserSignupIntegrationTest extends IntegrationTestBase {
                 .findByUserAndVerificationTypeAndVerificationAtIsNull(
                         savedUser.get(), VerificationType.SIGNUP, LocalDateTime.now().plusHours(1));
 
-        assertThat(verification).isPresent();
+        Assertions.assertThat(verification).isPresent();
         assertThat(verification.get()).isNotVerified().isNotExpired();
 
         // 4. 이메일 인증 실행

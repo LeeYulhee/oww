@@ -1,25 +1,22 @@
 package flobitt.oww.slice;
 
-import flobitt.oww.TestDataCleanup;
-import org.junit.jupiter.api.AfterEach;
+import flobitt.oww.config.TestQueryDslConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
- * Repository 레이어만 테스트하기 위한 베이스 클래스
+ * Repository 레이어 테스트를 위한 베이스 클래스
  */
 @DataJpaTest
+@Import(TestQueryDslConfig.class)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-@Import(TestDataCleanup.class)
 public abstract class RepositoryTestBase {
 
     @Autowired
-    protected TestDataCleanup testDataCleanup;
-
-    @AfterEach
-    void cleanUp() {
-        testDataCleanup.cleanupAll();
-    }
+    protected TestEntityManager entityManager;
 }

@@ -1,11 +1,10 @@
 package flobitt.oww.intergration;
 
-import flobitt.oww.IntegrationTestBase;
-import flobitt.oww.TestFixtures;
 import flobitt.oww.domain.user.entity.User;
-import flobitt.oww.domain.user.entity.UserStatus;
 import flobitt.oww.domain.user.repository.UserRepository;
 import flobitt.oww.domain.user.service.UserService;
+import flobitt.oww.support.IntegrationTestBase;
+import flobitt.oww.support.TestFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,14 +63,14 @@ class UserCleanupSchedulerIntegrationTest extends IntegrationTestBase {
         // 만료된 사용자들이 삭제 처리되었는지 확인
         User deletedUser1 = userRepository.findById(expiredUser1.getId()).orElseThrow();
         User deletedUser2 = userRepository.findById(expiredUser2.getId()).orElseThrow();
-        assertThat(deletedUser1.getIsDeleted()).isTrue();
-        assertThat(deletedUser2.getIsDeleted()).isTrue();
+        assertThat(deletedUser1.isDeleted()).isTrue();
+        assertThat(deletedUser2.isDeleted()).isTrue();
 
         // 최근 사용자와 인증된 사용자는 영향받지 않았는지 확인
         User unchangedRecentUser = userRepository.findById(recentUser.getId()).orElseThrow();
         User unchangedVerifiedUser = userRepository.findById(verifiedUser.getId()).orElseThrow();
-        assertThat(unchangedRecentUser.getIsDeleted()).isFalse();
-        assertThat(unchangedVerifiedUser.getIsDeleted()).isFalse();
+        assertThat(unchangedRecentUser.isDeleted()).isFalse();
+        assertThat(unchangedVerifiedUser.isDeleted()).isFalse();
     }
 
     @Test

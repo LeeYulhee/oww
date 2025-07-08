@@ -27,10 +27,10 @@ public class User extends SoftDeleteBaseEntity {
     @Column(name = "user_id", columnDefinition = "VARCHAR(36)")
     private UUID id;
 
-    @Column(name = "user_login_id")
+    @Column(name = "user_login_id", unique = true)
     private String userLoginId;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")

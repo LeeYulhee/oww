@@ -48,7 +48,7 @@ class UserTest {
         user.delete();
 
         // then
-        assertThat(user.getIsDeleted()).isTrue();
+        assertThat(user.isDeleted()).isTrue();
         assertThat(user.getDeletedAt()).isNotNull();
         assertThat(user.getDeletedAt()).isAfterOrEqualTo(beforeDelete);
     }
@@ -66,7 +66,7 @@ class UserTest {
         // then
         assertThat(user.getUserStatus()).isEqualTo(UserStatus.NOT_VERIFIED);
         assertThat(user.getEmailVerifiedAt()).isNull();
-        assertThat(user.getIsDeleted()).isFalse();
+        assertThat(user.isDeleted()).isFalse();
         assertThat(user.getDeletedAt()).isNull();
     }
 }

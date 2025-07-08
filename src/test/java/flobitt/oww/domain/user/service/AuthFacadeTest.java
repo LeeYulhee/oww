@@ -2,18 +2,15 @@ package flobitt.oww.domain.user.service;
 
 import flobitt.oww.domain.user.dto.req.CreateUserReq;
 import flobitt.oww.domain.user.dto.req.ResendEmailReq;
-import flobitt.oww.domain.user.entity.EmailVerificationTest;
-import flobitt.oww.domain.user.entity.User;
-import flobitt.oww.domain.user.entity.UserStatus;
-import flobitt.oww.domain.user.entity.VerificationType;
+import flobitt.oww.domain.user.entity.*;
 import flobitt.oww.domain.user.repository.EmailVerificationRepository;
 import flobitt.oww.domain.user.repository.UserRepository;
 import flobitt.oww.support.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 
@@ -41,7 +38,7 @@ class AuthFacadeTest extends IntegrationTestBase {
     @Autowired
     private ApplicationEvents applicationEvents;
 
-    @MockBean
+    @MockitoBean
     private ApplicationEventPublisher eventPublisher;
 
     @Test
@@ -66,7 +63,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         assertThat(savedUser.get().getEmailVerifiedAt()).isNull();
 
         // 2. 이메일 인증 정보가 저장되었는지 확인
-        Optional<EmailVerificationTest> verification = emailVerificationRepository
+        Optional<EmailVerification> verification = emailVerificationRepository
                 .findByUserAndVerificationTypeAndVerificationAtIsNull(
                         savedUser.get(), VerificationType.SIGNUP, LocalDateTime.now().plusHours(1));
         assertThat(verification).isPresent();
@@ -105,7 +102,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         String token = tokenService.generateVerificationToken(
                 user.getId(), user.getEmail(), VerificationType.SIGNUP);
 
-        EmailVerificationTest verification = createTestEmailVerification(user, token);
+        EmailVerification verification = createTestEmailVerification(user, token);
         emailVerificationRepository.save(verification);
 
         // when
@@ -116,7 +113,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         assertThat(verifiedUser.getUserStatus()).isEqualTo(UserStatus.ACTIVE);
         assertThat(verifiedUser.getEmailVerifiedAt()).isNotNull();
 
-        EmailVerificationTest updatedVerification = emailVerificationRepository
+        EmailVerification updatedVerification = emailVerificationRepository
                 .findById(verification.getId()).orElseThrow();
         assertThat(updatedVerification.getVerifiedAt()).isNotNull();
     }
@@ -129,7 +126,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         userRepository.save(user);
 
         // 만료된 토큰 생성 (과거 시간으로 설정)
-        EmailVerificationTest expiredVerification = EmailVerificationTest.builder()
+        EmailVerification expiredVerification = EmailVerification.builder()
                 .verificationToken("expired-token")
                 .verificationType(VerificationType.SIGNUP)
                 .email(user.getEmail())
@@ -155,7 +152,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         String token = tokenService.generateVerificationToken(
                 user.getId(), user.getEmail(), VerificationType.SIGNUP);
 
-        EmailVerificationTest verification = createTestEmailVerification(user, token);
+        EmailVerification verification = createTestEmailVerification(user, token);
         emailVerificationRepository.save(verification);
 
         // when & then
@@ -174,7 +171,7 @@ class AuthFacadeTest extends IntegrationTestBase {
         String token = tokenService.generateVerificationToken(
                 user.getId(), user.getEmail(), VerificationType.SIGNUP);
 
-        EmailVerificationTest verification = createTestEmailVerification(user, token);
+        EmailVerification verification = createTestEmailVerification(user, token);
         emailVerificationRepository.save(verification);
 
         ResendEmailReq request = ResendEmailReq.builder()
@@ -214,8 +211,8 @@ class AuthFacadeTest extends IntegrationTestBase {
                 .build();
     }
 
-    private EmailVerificationTest createTestEmailVerification(User user, String token) {
-        return EmailVerificationTest.builder()
+    private EmailVerification createTestEmailVerification(User user, String token) {
+        return EmailVerification.builder()
                 .verificationToken(token)
                 .verificationType(VerificationType.SIGNUP)
                 .email(user.getEmail())

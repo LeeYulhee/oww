@@ -117,3 +117,9 @@ class EmailServiceIntegrationTest {
   - 실제 Spring 빈들과의 상호작용을 테스트하고 싶을 때
 
 간단히 말하면, @Mock은 순수 단위 테스트, @MockBean은 Spring과 함께하는 테스트입니다!
+
+### Spring Boot 3.4.0부터 @MockBean이 deprecated되고, @MockitoBean으로 대체되었습니다.
+`@MockitoBean`
+```java
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+```

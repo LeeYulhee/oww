@@ -1,21 +1,26 @@
 package flobitt.oww.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import flobitt.oww.config.TestSecurityConfig;
 import flobitt.oww.domain.user.dto.req.CreateUserReq;
 import flobitt.oww.domain.user.service.AuthFacade;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(TestSecurityConfig.class)
 @WebMvcTest(UserController.class)
 class UserControllerTest {
 
@@ -25,7 +30,7 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AuthFacade authFacade;
 
     @Test
@@ -63,7 +68,9 @@ class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[*].field").value(hasItem("email")))  // 이메일 에러 확인
+                .andExpect(jsonPath("$.errors[*].message").value(hasItem(containsString("이메일"))));
 
         verify(authFacade, never()).signUp(any(CreateUserReq.class));
     }
@@ -82,7 +89,7 @@ class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpected(status().isBadRequest());
+                .andExpect(status().isBadRequest());
 
         verify(authFacade, never()).signUp(any(CreateUserReq.class));
     }

@@ -67,7 +67,7 @@ public class CustomAssertions {
 
         public UserAssert isDeleted() {
             isNotNull();
-            if (!actual.getIsDeleted()) {
+            if (!actual.isDeleted()) {
                 failWithMessage("Expected user to be deleted but was not");
             }
             if (actual.getDeletedAt() == null) {
@@ -78,7 +78,7 @@ public class CustomAssertions {
 
         public UserAssert isNotDeleted() {
             isNotNull();
-            if (actual.getIsDeleted()) {
+            if (actual.isDeleted()) {
                 failWithMessage("Expected user to not be deleted but was deleted");
             }
             return this;

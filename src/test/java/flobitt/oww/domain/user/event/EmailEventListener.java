@@ -2,6 +2,7 @@ package flobitt.oww.domain.user.event;
 
 import flobitt.oww.domain.user.event.ResendVerificationEmailEvent;
 import flobitt.oww.domain.user.event.SendVerificationEmailEvent;
+import flobitt.oww.domain.user.event.listener.EmailEventListener;
 import flobitt.oww.domain.user.service.EmailVerificationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

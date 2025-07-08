@@ -1,10 +1,7 @@
 package flobitt.oww.domain.user.service;
 
 import flobitt.oww.domain.user.dto.internal.ParseTokenDto;
-import flobitt.oww.domain.user.entity.EmailVerificationTest;
-import flobitt.oww.domain.user.entity.User;
-import flobitt.oww.domain.user.entity.UserStatus;
-import flobitt.oww.domain.user.entity.VerificationType;
+import flobitt.oww.domain.user.entity.*;
 import flobitt.oww.domain.user.repository.EmailVerificationRepository;
 import flobitt.oww.global.properties.AppProperties;
 import flobitt.oww.global.properties.MailProperties;
@@ -48,15 +45,16 @@ class EmailVerificationServiceTest {
     private EmailVerificationService emailVerificationService;
 
     private User testUser;
-    private MimeMessage mockMimeMessage;
 
     @BeforeEach
     void setUp() {
         testUser = createTestUser("test@example.com", "testuser");
+    }
 
+    void setMimeSession() {
         // MimeMessage 모킹을 위한 Session 생성
         Session session = Session.getDefaultInstance(new Properties());
-        mockMimeMessage = new MimeMessage(session);
+        MimeMessage mockMimeMessage = new MimeMessage(session);
 
         given(mailSender.createMimeMessage()).willReturn(mockMimeMessage);
         given(appProperties.getFrontendUrl()).willReturn("http://localhost:3000");
@@ -74,10 +72,10 @@ class EmailVerificationServiceTest {
         emailVerificationService.createEmailVerification(testUser, token);
 
         // then
-        ArgumentCaptor<EmailVerificationTest> captor = ArgumentCaptor.forClass(EmailVerificationTest.class);
+        ArgumentCaptor<EmailVerification> captor = ArgumentCaptor.forClass(EmailVerification.class);
         verify(emailVerificationRepository, times(1)).save(captor.capture());
 
-        EmailVerificationTest savedVerification = captor.getValue();
+        EmailVerification savedVerification = captor.getValue();
         assertThat(savedVerification.getVerificationToken()).isEqualTo(token);
         assertThat(savedVerification.getEmail()).isEqualTo(testUser.getEmail());
         assertThat(savedVerification.getVerificationType()).isEqualTo(VerificationType.SIGNUP);
@@ -89,7 +87,7 @@ class EmailVerificationServiceTest {
     @DisplayName("이메일 인증 상태 업데이트 성공")
     void updateEmailVerification_Success() {
         // given
-        EmailVerificationTest verification = createTestEmailVerification(testUser, "test-token");
+        EmailVerification verification = createTestEmailVerification(testUser, "test-token");
 
         // when
         emailVerificationService.updateEmailVerification(verification);
@@ -109,13 +107,13 @@ class EmailVerificationServiceTest {
                 .tokenType("SIGNUP")
                 .build();
 
-        EmailVerificationTest verification = createTestEmailVerification(testUser, token);
+        EmailVerification verification = createTestEmailVerification(testUser, token);
         given(emailVerificationRepository.findValidVerificationByParseToken(
-                parseTokenDto, token, any(LocalDateTime.class)))
+                eq(parseTokenDto), eq(token), any(LocalDateTime.class)))
                 .willReturn(Optional.of(verification));
 
         // when
-        EmailVerificationTest foundVerification = emailVerificationService
+        EmailVerification foundVerification = emailVerificationService
                 .findValidVerificationByParseToken(parseTokenDto, token, LocalDateTime.now());
 
         // then
@@ -136,7 +134,7 @@ class EmailVerificationServiceTest {
                 .build();
 
         given(emailVerificationRepository.findValidVerificationByParseToken(
-                parseTokenDto, token, any(LocalDateTime.class)))
+                eq(parseTokenDto), eq(token), any(LocalDateTime.class)))
                 .willReturn(Optional.empty());
 
         // when & then
@@ -150,13 +148,13 @@ class EmailVerificationServiceTest {
     @DisplayName("사용자와 인증 타입으로 미인증 토큰 조회 성공")
     void findByUserAndVerificationTypeAndVerificationAtIsNull_Success() {
         // given
-        EmailVerificationTest verification = createTestEmailVerification(testUser, "test-token");
+        EmailVerification verification = createTestEmailVerification(testUser, "test-token");
         given(emailVerificationRepository.findByUserAndVerificationTypeAndVerificationAtIsNull(
-                testUser, VerificationType.SIGNUP, any(LocalDateTime.class)))
+                eq(testUser), eq(VerificationType.SIGNUP), any(LocalDateTime.class)))
                 .willReturn(Optional.of(verification));
 
         // when
-        EmailVerificationTest foundVerification = emailVerificationService
+        EmailVerification foundVerification = emailVerificationService
                 .findByUserAndVerificationTypeAndVerificationAtIsNull(testUser, VerificationType.SIGNUP);
 
         // then
@@ -170,7 +168,7 @@ class EmailVerificationServiceTest {
     void findByUserAndVerificationTypeAndVerificationAtIsNull_NotFound_ThrowsException() {
         // given
         given(emailVerificationRepository.findByUserAndVerificationTypeAndVerificationAtIsNull(
-                testUser, VerificationType.SIGNUP, any(LocalDateTime.class)))
+                eq(testUser), eq(VerificationType.SIGNUP), any(LocalDateTime.class)))
                 .willReturn(Optional.empty());
 
         // when & then
@@ -186,6 +184,7 @@ class EmailVerificationServiceTest {
         // given
         String email = "test@example.com";
         String token = "verification-token";
+        setMimeSession();
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         // when
@@ -202,6 +201,7 @@ class EmailVerificationServiceTest {
         // given
         String email = "test@example.com";
         String token = "verification-token";
+        setMimeSession();
         doThrow(new RuntimeException("SMTP server error"))
                 .when(mailSender).send(any(MimeMessage.class));
 
@@ -221,8 +221,8 @@ class EmailVerificationServiceTest {
                 .build();
     }
 
-    private EmailVerificationTest createTestEmailVerification(User user, String token) {
-        return EmailVerificationTest.builder()
+    private EmailVerification createTestEmailVerification(User user, String token) {
+        return EmailVerification.builder()
                 .verificationToken(token)
                 .verificationType(VerificationType.SIGNUP)
                 .email(user.getEmail())

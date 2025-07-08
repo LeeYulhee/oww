@@ -8,8 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -27,7 +27,7 @@ class EmailVerificationControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AuthFacade authFacade;
 
     @Test
@@ -72,8 +72,8 @@ class EmailVerificationControllerTest {
 
         // when & then
         mockMvc.perform(post("/email-verifications/resend")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         verify(authFacade, times(1)).resendEmail(any(ResendEmailReq.class));
@@ -93,9 +93,10 @@ class EmailVerificationControllerTest {
 
         // when & then
         mockMvc.perform(post("/email-verifications/resend")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError()); // 예외 처리에 따라 다를 수 있음
 
         verify(authFacade, times(1)).resendEmail(any(ResendEmailReq.class));
     }
+}
