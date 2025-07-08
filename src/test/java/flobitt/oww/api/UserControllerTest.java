@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -69,8 +68,7 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[*].field").value(hasItem("email")))  // 이메일 에러 확인
-                .andExpect(jsonPath("$.errors[*].message").value(hasItem(containsString("이메일"))));
+                .andExpect(jsonPath("$.resultMsg").value(containsString("이메일")));
 
         verify(authFacade, never()).signUp(any(CreateUserReq.class));
     }
@@ -89,7 +87,9 @@ class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultMsg").value(containsString("비밀번호")));
+
 
         verify(authFacade, never()).signUp(any(CreateUserReq.class));
     }
@@ -108,7 +108,8 @@ class UserControllerTest {
         mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultMsg").value(containsString("로그인 ID")));
 
         verify(authFacade, never()).signUp(any(CreateUserReq.class));
     }

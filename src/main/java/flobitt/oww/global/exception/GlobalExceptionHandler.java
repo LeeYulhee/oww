@@ -3,6 +3,7 @@ package flobitt.oww.global.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -75,6 +76,19 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.valueOf(e.getStatusCode().value()))
                 .divisionCode(BAD_REQUEST_ERROR.getDivisionCode())
                 .resultMsg(e.getBindingResult().getFieldErrors().get(0).getDefaultMessage())
+                .build();
+
+        return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    protected ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.error("HttpMessageNotReadableException", e);
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(BAD_REQUEST_ERROR.getStatus())
+                .divisionCode(BAD_REQUEST_ERROR.getDivisionCode())
+                .resultMsg(BAD_REQUEST_ERROR.getMessage())
                 .build();
 
         return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
