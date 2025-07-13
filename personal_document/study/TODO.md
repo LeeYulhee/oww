@@ -1,0 +1,3 @@
+- [ ] 테스트 코드 리팩토링 : TestFixtures 적용
+- [ ] AsyncConfig 리팩토링
+- [ ] Exception 정의

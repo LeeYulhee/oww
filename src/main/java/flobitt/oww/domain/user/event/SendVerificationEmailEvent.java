@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateUserEvent {
+public class SendVerificationEmailEvent {
     private String email;
     private String token;
 }

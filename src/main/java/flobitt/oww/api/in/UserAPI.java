@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 @Tag(name = "users", description = "user API")
 public interface UserAPI {
-    @Operation(summary = "회원가입", description = "회원을 가입한다.")
-    public ResponseEntity<Void> createUser(CreateUserReq dto);
+
+    @Operation(summary = "회원가입", description = "회원가입을 한다.")
+    ResponseEntity<Void> createUser(CreateUserReq dto);
 }

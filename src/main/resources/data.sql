@@ -45,7 +45,7 @@ CREATE TABLE `EMAIL_VERIFICATIONS` (
 	`created_at`	        DATETIME        NOT NULL,
 	`updated_at`      DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP,
 	`user_id`	            VARCHAR(36)     NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES USERS(user_id)
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='이메일 인증 (회원가입, 비밀번호 재설정 등)';
 
 
@@ -58,7 +58,7 @@ CREATE TABLE `WORKOUT_RECORDS` (
 	`created_at`          DATETIME        NOT NULL,
 	`updated_at`          DATETIME        NOT NULL    DEFAULT CURRENT_TIMESTAMP,
 	`user_id`             VARCHAR(36)     NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES USERS(user_id),
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
 	INDEX idx_workout_date (workout_date)
 ) ENGINE=InnoDB COMMENT='운동 기록';
 
@@ -71,8 +71,8 @@ CREATE TABLE `NOTIFICATION_SETTINGS` (
 	`updated_at`              DATETIME	     NOT NULL    DEFAULT CURRENT_TIMESTAMP,
 	`group_id`                VARCHAR(36)    NOT NULL                                 COMMENT '그룹별 알림 설정',
 	`user_id`                 VARCHAR(36)    NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES USERS(user_id),
-	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id)
+	FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
+	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id) ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='알림 설정';
 
 CREATE TABLE `GROUP_MEMBERS` (
@@ -86,8 +86,8 @@ CREATE TABLE `GROUP_MEMBERS` (
     `deleted_at`	  DATETIME	     NULL,
 	`group_id`        VARCHAR(36)    NOT NULL,
 	`user_id`         VARCHAR(36)    NOT NULL,
-	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id),
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id),
+	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
     INDEX idx_is_deleted (is_deleted)
 ) ENGINE=InnoDB COMMENT='그룹 구성원';
 
@@ -100,9 +100,9 @@ CREATE TABLE `GROUP_WORKOUT_LOGS` (
 	`updated_at`      DATETIME           NOT NULL    DEFAULT CURRENT_TIMESTAMP,
 	`group_id`        VARCHAR(36)        NOT NULL,
 	`user_id`         VARCHAR(36)        NOT NULL,
-	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id),
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id),
-    FOREIGN KEY (record_id) REFERENCES WORKOUT_RECORDS(record_id),
+	FOREIGN KEY (group_id) REFERENCES GROUPS(group_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (record_id) REFERENCES WORKOUT_RECORDS(record_id) ON DELETE CASCADE,
     INDEX idx_workout_date (workout_date)
 ) ENGINE=InnoDB COMMENT='그룹별 운동 로그';
 
@@ -114,5 +114,5 @@ CREATE TABLE `MEMBER_GOAL_HISTORY` (
 	`created_at`      DATETIME    NOT NULL,
 	`updated_at`      DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP,
 	`member_id`       VARCHAR(36) NOT NULL,
-	FOREIGN KEY (member_id) REFERENCES GROUP_MEMBERS(member_id)
+	FOREIGN KEY (member_id) REFERENCES GROUP_MEMBERS(member_id) ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='그룹원 개인 목표 이력';

@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: never  # data.sql 실행 비활성화
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # JPA 엔티티로 테이블 생성
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
