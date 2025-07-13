@@ -36,7 +36,7 @@ public class AuthFacade {
         User user = CreateUserReq.toEntity(req, passwordEncoder.encode(req.getPassword()));
         userService.createUser(user);
 
-        String emailToken = tokenService.generateVerificationToken(user.getId(), user.getEmail(), VerificationType.SIGNUP);
+        String emailToken = tokenService.generateVerificationToken(user.getEmail(), VerificationType.SIGNUP);
         emailVerificationService.createEmailVerification(user, emailToken);
 
         applicationEventPublisher.publishEvent(new SendVerificationEmailEvent(user.getEmail(), emailToken));
@@ -52,6 +52,9 @@ public class AuthFacade {
 
         // 이메일 재발송
         applicationEventPublisher.publishEvent(new ResendVerificationEmailEvent(user.getEmail(), verification.getVerificationToken()));
+
+        log.info("Using ApplicationEventPublisher: {}", applicationEventPublisher.getClass().getName());
+        log.info("Publisher instance: {}", System.identityHashCode(applicationEventPublisher));
 
         log.info("인증 이메일 재발송 완료: userId={}", user.getUserLoginId());
     }

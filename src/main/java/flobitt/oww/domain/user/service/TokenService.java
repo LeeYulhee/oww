@@ -5,6 +5,7 @@ import flobitt.oww.domain.user.entity.VerificationType;
 import flobitt.oww.global.properties.AppProperties;
 import flobitt.oww.global.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class TokenService {
     /**
      * 인증 토큰 생성
      */
-    public String generateVerificationToken(UUID userId, String email, VerificationType type) {
+    public String generateVerificationToken(String email, VerificationType type) {
         SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
         String nonce = generateSecureNonce();
 
@@ -40,7 +41,7 @@ public class TokenService {
                 .claim("email", email)
                 .claim("type", type.toString())
                 .claim("nonce", nonce)
-                .setExpiration(Date.from(Instant.now().plusSeconds(appProperties.getVerificationTokenExpiry() * 3600)))
+                .setExpiration(Date.from(Instant.now().plusSeconds(appProperties.getVerificationTokenExpiry() * 3600L)))
                 .signWith(secretKey)
                 .compact();
     }
@@ -67,13 +68,20 @@ public class TokenService {
      * JWT 토큰 파싱
      */
     private Claims parseToken(String token) {
-        SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
+        try {
+            SecretKey secretKey = getSecretKey(jwtProperties.getVerificationKey());
 
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            // TODO Exception 설정
+            log.warn("JWT parsing failed: {}", e.getClass().getSimpleName());
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
     }
 
     /**

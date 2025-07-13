@@ -1,4 +1,4 @@
-package flobitt.oww.intergration;
+package flobitt.oww.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import flobitt.oww.domain.user.dto.req.CreateUserReq;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,14 +18,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * 유효성 검사 통합 테스트
  */
-@AutoConfigureWebMvc
+@AutoConfigureMockMvc
 class ValidationIntegrationTest extends IntegrationTestBase {
 
     @Autowired
-    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private MockMvc mockMvc;
 
     @ParameterizedTest
     @ValueSource(strings = {"", "a", "ab", "abc"}) // 4자 미만

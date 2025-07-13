@@ -9,5 +9,4 @@ class OwwApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }

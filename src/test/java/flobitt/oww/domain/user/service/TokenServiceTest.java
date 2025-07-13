@@ -70,7 +70,7 @@ class TokenServiceTest {
         VerificationType type = VerificationType.SIGNUP;
 
         // when
-        String token = tokenService.generateVerificationToken(userId, email, type);
+        String token = tokenService.generateVerificationToken(email, type);
 
         // then
         assertThat(token).isNotNull();
@@ -99,7 +99,7 @@ class TokenServiceTest {
         String email = "test@example.com";
         VerificationType type = VerificationType.SIGNUP;
 
-        String token = tokenService.generateVerificationToken(userId, email, type);
+        String token = tokenService.generateVerificationToken(email, type);
 
         // when
         ParseTokenDto result = tokenService.validateToken(token);
@@ -118,7 +118,8 @@ class TokenServiceTest {
 
         // when & then
         assertThatThrownBy(() -> tokenService.validateToken(invalidToken))
-                .isInstanceOf(JwtException.class);  // JWT 파싱 예외
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("유효하지 않은 토큰입니다.");
     }
 
     @Test

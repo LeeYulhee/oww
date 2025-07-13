@@ -1,5 +1,6 @@
-package flobitt.oww.intergration;
+package flobitt.oww.integration;
 
+import flobitt.oww.domain.base.entity.SoftDeleteBaseEntity;
 import flobitt.oww.domain.user.entity.User;
 import flobitt.oww.domain.user.repository.UserRepository;
 import flobitt.oww.domain.user.service.UserService;
@@ -8,7 +9,7 @@ import flobitt.oww.support.TestFixtures;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -19,10 +20,6 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * 사용자 정리 스케줄러 통합 테스트
  */
-@TestPropertySource(properties = {
-    "app.verification-token-expiry=24",
-    "app.hard-delete-days=7"
-})
 class UserCleanupSchedulerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
@@ -30,6 +27,9 @@ class UserCleanupSchedulerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     @DisplayName("만료된 미인증 사용자 삭제 처리 통합 테스트")
@@ -45,20 +45,17 @@ class UserCleanupSchedulerIntegrationTest extends IntegrationTestBase {
         // 인증된 사용자
         User verifiedUser = TestFixtures.createVerifiedUser("verified@example.com", "verified");
 
-        // 생성 시간을 과거로 설정 (리플렉션 사용)
-        setCreatedAt(expiredUser1, LocalDateTime.now().minusHours(25));
-        setCreatedAt(expiredUser2, LocalDateTime.now().minusHours(25));
+        userRepository.saveAllAndFlush(List.of(expiredUser1, expiredUser2, recentUser, verifiedUser));
 
-        userRepository.saveAll(List.of(expiredUser1, expiredUser2, recentUser, verifiedUser));
+        // 2. 저장 후 생성 시간을 과거로 직접 업데이트(JPA Auditing 우회)
+        updateCreatedAt(expiredUser1.getUserLoginId(), LocalDateTime.now().minusHours(25));
+        updateCreatedAt(expiredUser2.getUserLoginId(), LocalDateTime.now().minusHours(25));
 
         // 2. 스케줄러 실행
         int deletedCount = userService.deleteExpiredUnverifiedUsers();
 
         // 3. 결과 확인
         assertThat(deletedCount).isEqualTo(2);
-
-        // 4. 데이터베이스 상태 확인
-        List<User> allUsers = userRepository.findAll();
 
         // 만료된 사용자들이 삭제 처리되었는지 확인
         User deletedUser1 = userRepository.findById(expiredUser1.getId()).orElseThrow();
@@ -108,15 +105,17 @@ class UserCleanupSchedulerIntegrationTest extends IntegrationTestBase {
         assertThat(userRepository.findById(activeUser.getId())).isPresent();
     }
 
-    // 리플렉션을 사용한 헬퍼 메서드들 (실제 구현에서는 더 나은 방법을 찾는 것이 좋음)
-    private void setCreatedAt(User user, LocalDateTime createdAt) throws Exception {
-        Field field = user.getClass().getSuperclass().getDeclaredField("createdAt");
-        field.setAccessible(true);
-        field.set(user, createdAt);
+
+    // JPA Auditing을 우회하는 직접 SQL 업데이트 메서드들
+    private void updateCreatedAt(String userId, LocalDateTime createdAt) {
+        String sql = "UPDATE users SET created_at = ? WHERE user_login_id = ?";
+        int updatedRows = jdbcTemplate.update(sql, createdAt, userId);
+        System.out.println("Updated created_at for user " + userId + ": " + updatedRows + " rows affected");
     }
 
+    // 리플렉션을 사용한 헬퍼 메서드
     private void setDeletedAt(User user, LocalDateTime deletedAt) throws Exception {
-        Field field = user.getClass().getSuperclass().getDeclaredField("deletedAt");
+        Field field = SoftDeleteBaseEntity.class.getDeclaredField("deletedAt");
         field.setAccessible(true);
         field.set(user, deletedAt);
     }

@@ -1,0 +1,24 @@
+spring:
+  mail:
+    host: localhost
+    port: 25
+    username: test@test.com
+    password: test
+  sql:
+    init:
+      mode: never
+
+app:
+  frontend-url: http://localhost:8080
+  verification-token-expiry: 24
+  hard-delete-days: 7
+  scheduler:
+    enabled: false
+
+jwt:
+  verification-key: test-secret-key-for-verification-tokens-must-be-long-enough
+
+logging:
+  level:
+    flobitt.oww: DEBUG
+    p6spy: DEBUG

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,6 +31,7 @@ public class UserService {
      */
     @Transactional
     public void createUser(User user) {
+        validExistUserEmailOrLoginId(user);
         userRepository.save(user);
     }
 
@@ -124,5 +126,27 @@ public class UserService {
         userRepository.delete(user);
         log.debug("사용자 완전 삭제 처리: userId={}, email={}, deletedAt={}",
                 user.getUserLoginId(), user.getEmail(), user.getDeletedAt());
+    }
+
+    /**
+     * User 조회 : 이메일
+     */
+    private Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
+     * User 조회 : UserLoginId
+     */
+    private Optional<User> findByUserLoginId(String userLoginId) {
+        return userRepository.findByUserLoginId(userLoginId);
+    }
+
+    /**
+     * User 이메일, UserLoginId 존재 확인
+     */
+    private void validExistUserEmailOrLoginId(User user) {
+        if(findByEmail(user.getEmail()).isPresent()) throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        if(findByUserLoginId(user.getUserLoginId()).isPresent()) throw new IllegalArgumentException("이미 존재하는 ID입니다.");
     }
 }
