@@ -13,6 +13,7 @@ CREATE TABLE `USERS` (
 	`email`	            VARCHAR(255) NOT NULL    UNIQUE 	            COMMENT '이메일',
 	`password`	        VARCHAR(255) NOT NULL	                        COMMENT '암호화된 비밀번호(필요하면 추후에 비밀번호 만료일자도 별도 테이블로 추가)',
 	`user_status`	    VARCHAR(20)	 NOT NULL	 DEFAULT 'NOT_VERIFIED'	COMMENT '계정 활성화 상태(ACTIVE, NOT_VERIFIED)',
+	`user_role`	        VARCHAR(20)	 NOT NULL	 DEFAULT 'USER'	        COMMENT '계정 역할(USER, ADMIN)',
 	`email_verified_at`	DATETIME	 NULL	                            COMMENT '이메일 인증 완료 시간',
 	`is_deleted`	    BOOLEAN	     NOT NULL    DEFAULT FALSE,
     `deleted_at`	    DATETIME	 NULL,
