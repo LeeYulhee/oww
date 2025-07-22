@@ -41,6 +41,11 @@ public class User extends SoftDeleteBaseEntity {
     @Builder.Default
     private UserStatus userStatus = UserStatus.NOT_VERIFIED;
 
+    @Column(name = "user_role")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private UserRole userRole = UserRole.USER;
+
     @Column(name = "email_verified_at")
     private LocalDateTime emailVerifiedAt;
 
